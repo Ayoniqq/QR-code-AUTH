@@ -7,9 +7,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const qrcode = require("qrcode");
 const User = require("./model/user");
+const { findOne } = require("./model/user");
 
 app.use(express.json());
 
+// app.get("/", (req, res) => {
+//   res.send("HOME PAGE");
+// });
 app.post("/register", async (req, res) => {
   try {
     const { first_name, last_name, email, password } = req.body;
@@ -54,8 +58,35 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", (req, res) => {
-  //
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!(email && password)) {
+      res.status(400).send("All input is required");
+    }
+
+    const user = await User.findOne({ email });
+    const pass = await bcrypt.compare(password, user.password);
+
+    if (user && pass) {
+      //Create Token
+      const token = jwt.sign(
+        { user_id: user._id, email },
+        process.env.TOKEN_KEY,
+        {
+          expiresIn: "2h",
+        }
+      );
+
+      user.token = token;
+
+      return res.status(200).json({ token });
+    }
+    return res.status(400).send("Invalid Credentials");
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 module.exports = app;
