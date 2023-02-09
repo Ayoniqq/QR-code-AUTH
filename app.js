@@ -11,9 +11,9 @@ const qrCode = require("./model/qrCode");
 const ejs = require("ejs");
 
 app.set("view engine", "ejs");
-app.set(express.urlencoded({ extended: true }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("HOME PAGE");
@@ -75,16 +75,17 @@ app.post("/login", async (req, res) => {
   try {
     console.log("Good credentials");
     // const { email, password } = req.body;
-    const email = "User8@gmail.com";
+    const email = "user8@gmail.com";
     const password = "12345678";
 
     if (!(email && password)) {
       res.status(400).send("All input is required");
     }
+    //console.log(password);
 
     const user = await User.findOne({ email });
     const pass = await bcrypt.compare(password, user.password);
-
+    console.log(user.password);
     if (user && pass) {
       //Create Token
       const token = jwt.sign(
