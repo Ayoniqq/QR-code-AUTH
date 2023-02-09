@@ -183,6 +183,6 @@ app.post("/register", async (req, res) => {
 //   } catch (err) {
 //     console.log(err);
 //   }
-// });
+// }); //COMMENTED OUT FOR NOW
 
 module.exports = app;
