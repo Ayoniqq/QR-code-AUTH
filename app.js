@@ -8,15 +8,29 @@ const jwt = require("jsonwebtoken");
 const qrcode = require("qrcode");
 const User = require("./model/user");
 const qrCode = require("./model/qrCode");
+const ejs = require("ejs");
+
+app.set("view engine", "ejs");
+app.set(express.urlencoded({ extended: true }));
 
 app.use(express.json());
 
-// app.get("/", (req, res) => {
-//   res.send("HOME PAGE");
-// });
+app.get("/", (req, res) => {
+  res.send("HOME PAGE");
+});
+
+app.get("/register", (req, res) => {
+  res.render("");
+});
 app.post("/register", async (req, res) => {
   try {
-    const { first_name, last_name, email, password } = req.body;
+    // const { first_name, last_name, email, password } = req.body;
+    const first_name = "User8";
+    const last_name = "Client8";
+    const email = "User8@gmail.com";
+    const password = "12345678";
+
+    console.log("Good credentials");
 
     //validate user input
     if (!(email && password && first_name && last_name)) {
@@ -27,7 +41,6 @@ app.post("/register", async (req, res) => {
     if (oldUser) {
       return res.status(409).send("User Already Exists. Kindly Login");
     }
-
     // Encrypt user password
     encryptedPassword = await bcrypt.hash(password, 10);
 
@@ -58,36 +71,39 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// app.post("/login", async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
+app.post("/login", async (req, res) => {
+  try {
+    console.log("Good credentials");
+    // const { email, password } = req.body;
+    const email = "User8@gmail.com";
+    const password = "12345678";
 
-//     if (!(email && password)) {
-//       res.status(400).send("All input is required");
-//     }
+    if (!(email && password)) {
+      res.status(400).send("All input is required");
+    }
 
-//     const user = await User.findOne({ email });
-//     const pass = await bcrypt.compare(password, user.password);
+    const user = await User.findOne({ email });
+    const pass = await bcrypt.compare(password, user.password);
 
-//     if (user && pass) {
-//       //Create Token
-//       const token = jwt.sign(
-//         { user_id: user._id, email },
-//         process.env.TOKEN_KEY,
-//         {
-//           expiresIn: "2h",
-//         }
-//       );
+    if (user && pass) {
+      //Create Token
+      const token = jwt.sign(
+        { user_id: user._id, email },
+        process.env.TOKEN_KEY,
+        {
+          expiresIn: "2h",
+        }
+      );
 
-//       user.token = token;
+      user.token = token;
 
-//       return res.status(200).json({ token });
-//     }
-//     return res.status(400).send("Invalid Credentials");
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
+      return res.status(200).json({ token });
+    }
+    return res.status(400).send("Invalid Credentials");
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 // app.post("/qr/generate", async (req, res) => {
 //   try {
