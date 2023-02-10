@@ -154,59 +154,61 @@ app.post("/qr/generate", async (req, res) => {
   }
 });
 
-// app.post("qr/scan", async (req, res) => {
-//   try {
-//     const { token, deviceInformation } = req.body;
+app.post("qr/scan", async (req, res) => {
+  try {
+    // const { token, deviceInformation } = req.body;
+    const token = "mySecretKey";
+    const deviceInformation = "iPhone 12";
 
-//     if (!token && !deviceInformation) {
-//       res.status(400).send("Token and deviceInformation is required");
-//     }
+    if (!token && !deviceInformation) {
+      res.status(400).send("Token and deviceInformation is required");
+    }
 
-//     const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    const decoded = jwt.verify(token, process.env.TOKEN_KEY);
 
-//     const qrCode = await qrCode.findOne({
-//       userId: decoded.userId,
-//       disabled: false,
-//     });
+    const qrCode = await qrCode.findOne({
+      userId: decoded.userId,
+      disabled: false,
+    });
 
-//     if (!qrCode) {
-//       res.status(400).send("QR Code not found");
-//     }
+    if (!qrCode) {
+      res.status(400).send("QR Code not found");
+    }
 
-//     const connectedDeviceData = {
-//       userId: decoded.userId,
-//       qrCodedId: qrCode._id,
-//       deviceName: deviceInformation.deviceName,
-//       deviceModel: deviceInformation.deviceModel,
-//       deviceOS: deviceInformation.deviceOS,
-//       deviceVersion: deviceInformation.deviceVersion,
-//     };
+    const connectedDeviceData = {
+      userId: decoded.userId,
+      qrCodedId: qrCode._id,
+      deviceName: deviceInformation.deviceName,
+      deviceModel: deviceInformation.deviceModel,
+      deviceOS: deviceInformation.deviceOS,
+      deviceVersion: deviceInformation.deviceVersion,
+    };
 
-//     const connectedDevice = await connectedDevice.create(connectedDeviceData);
+    const connectedDevice = await connectedDevice.create(connectedDeviceData);
 
-//     //Update QR CODE
-//     await qrCode.findOneAndUpdate(
-//       { _id: qrCode._id },
-//       {
-//         isActive: true,
-//         connectedDeviceId: connectedDevice._id,
-//         lastUsedDate: new Date(),
-//       }
-//     );
+    //Update QR CODE
+    await qrCode.findOneAndUpdate(
+      { _id: qrCode._id },
+      {
+        isActive: true,
+        connectedDeviceId: connectedDevice._id,
+        lastUsedDate: new Date(),
+      }
+    );
 
-//     //Find User
-//     const user = await User.findById(decoded.userId);
+    //Find User
+    const user = await User.findById(decoded.userId);
 
-//     //Create Token
-//     const authToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_KEY, {
-//       expiresIn: "2h",
-//     });
+    //Create Token
+    const authToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_KEY, {
+      expiresIn: "2h",
+    });
 
-//     //Return Token
-//     return res.status(200), json({ token: authToken });
-//   } catch (err) {
-//     console.log(err);
-//   }
-// }); //COMMENTED OUT FOR NOW
+    //Return Token
+    return res.status(200), json({ token: authToken });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 module.exports = app;
