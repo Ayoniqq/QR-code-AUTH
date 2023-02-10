@@ -5,9 +5,9 @@ const app = express();
 const PORT = process.env.PORT;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const qrcode = require("qrcode");
-const User = require("./model/user");
-const qrCode = require("./model/qrCode");
+const qrcode = require("qrcode"); //PACKAGE
+const User = require("./model/user"); //MODEL
+const qrCode = require("./model/qrCode"); //MODEL
 const ejs = require("ejs");
 
 app.set("view engine", "ejs");
@@ -84,6 +84,9 @@ app.post("/login", async (req, res) => {
     //console.log(password);
 
     const user = await User.findOne({ email });
+    if (!user) {
+      res.status(400).send("User not found"); //DONT USE THIS FOR PRODUCTION, Not good to give the user hint that one is incorrect
+    }
     const pass = await bcrypt.compare(password, user.password);
     console.log(user.password);
     if (user && pass) {
@@ -106,46 +109,50 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// app.post("/qr/generate", async (req, res) => {
-//   try {
-//     const { userId } = req.body;
+app.post("/qr/generate", async (req, res) => {
+  try {
+    // const { userId } = req.body;
+    const email = "user8@gmail.com";
+    const userId = "63e4cf6c3e20b80d7b746331";
 
-//     //validate user input
-//     if (!userId) {
-//       res.status(400).send("UserId is required");
-//     }
-//     const user = await User.findById(userId);
+    //validate user input
+    if (!userId) {
+      res.status(400).send("UserId is required");
+    }
+    const user = await User.findById(userId);
 
-//     //Validate if user exists
-//     if (!user) {
-//       res.status(400).send("User Not Found");
-//     }
-//     const qrExist = await qrCode.findOne({ userId });
-//     if (!qrExist) {
-//       await qrCode.create({ userId });
-//     } else {
-//       await qrCode.findOneAndUpdate({ userId }, { $set: { disabled: true } });
-//       await qrCode.create({ userId });
-//     }
+    //Validate if user exists
+    if (!user) {
+      res.status(400).send("User Not Found");
+    }
+    const qrExist = await qrCode.findOne({ userId });
+    if (!qrExist) {
+      await qrCode.create({ userId });
+    } else {
+      await qrCode.findOneAndUpdate({ userId }, { $set: { disabled: true } });
+      await qrCode.create({ userId });
+      //      console.log("HAS BEEN CREATED");
+    }
 
-//     //Generate encrypted data
-//     const encryptedData = jwt.sign(
-//       { userId: user._id, email },
-//       process.env.TOKEN_KEY,
-//       {
-//         expiresIn: "1d",
-//       }
-//     );
+    //Generate encrypted data
+    const encryptedData = jwt.sign(
+      { user_id: user._id, email },
+      process.env.TOKEN_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
+    console.log(encryptedData);
 
-//     //Generate QR Code
-//     const dataImage = await qrCode.toDataUrl(encryptedData);
+    //Generate QR Code
+    const dataImage = await qrcode.toDataURL(encryptedData);
 
-//     //Return QR Code
-//     return res.status(200).json({ dataImage });
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
+    //Return QR Code
+    return res.status(200).json({ dataImage });
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 // app.post("qr/scan", async (req, res) => {
 //   try {
