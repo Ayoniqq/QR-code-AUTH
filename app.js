@@ -145,7 +145,7 @@ app.post("/qr/generate", async (req, res) => {
     console.log(encryptedData);
 
     //Generate QR Code
-    const dataImage = await qrcode.toDataURL(encryptedData);
+    const dataImage = await qrcode.toDataURL(encryptedData); //HAd issues with this line, i was calling the model instead of qrcode package
 
     //Return QR Code
     return res.status(200).json({ dataImage });
