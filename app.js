@@ -154,10 +154,11 @@ app.post("/qr/generate", async (req, res) => {
   }
 });
 
-app.post("qr/scan", async (req, res) => {
+app.post("/qr/scan", async (req, res) => {
   try {
     // const { token, deviceInformation } = req.body;
-    const token = "mySecretKey";
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjNlNGNmNmMzZTIwYjgwZDdiNzQ2MzMxIiwiZW1haWwiOiJ1c2VyOEBnbWFpbC5jb20iLCJpYXQiOjE2NzYwMjU4MzksImV4cCI6MTY3NjExMjIzOX0.tkTONUWKD4Jq0xQgL1se0Ckldy32VR4fIdl8cNrT27U";
     const deviceInformation = "iPhone 12";
 
     if (!token && !deviceInformation) {
@@ -165,19 +166,22 @@ app.post("qr/scan", async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+    if (decoded) {
+      console.log("DECODED");
+    }
 
-    const qrCode = await qrCode.findOne({
+    const qrCoded = await qrCode.findOne({
       userId: decoded.userId,
       disabled: false,
     });
 
-    if (!qrCode) {
+    if (!qrCoded) {
       res.status(400).send("QR Code not found");
     }
 
     const connectedDeviceData = {
       userId: decoded.userId,
-      qrCodedId: qrCode._id,
+      qrCodedId: qrCoded._id,
       deviceName: deviceInformation.deviceName,
       deviceModel: deviceInformation.deviceModel,
       deviceOS: deviceInformation.deviceOS,
